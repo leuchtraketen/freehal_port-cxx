@@ -38,6 +38,9 @@ void ranking<O, R>::insert(O o, R r) {
 
 template<typename O, typename R>
 O ranking<O, R>::get(int i) {
+	if (values.size() == 0)
+		std::transform(map.begin(), map.end(), std::back_inserter(values),
+				boost::bind(&std::map<R, O>::value_type::second, _1));
 	return (i < values.size() ? values[i] : O());
 }
 
@@ -51,26 +54,24 @@ R ranking<O, R>::rank(int i) {
 
 template<typename O, typename R>
 vector<O> ranking<O, R>::best() {
-	if (values.size() == 0)
-		std::transform(map.begin(), map.end(), std::back_inserter(values),
-				boost::bind(&std::map<R, O>::value_type::second, _1));
-
-	vector<O> best;
-	if (values.size() > 0) {
-		R bestrank = rank(values[values.size()-1]);
-		for (int i = values.size()-1; i >= 0; --i) {
+	vector < O > best;
+	if (size() > 0) {
+		R bestrank = rank(size() - 1);
+		for (int i = size() - 1; i >= 0; --i) {
 			if (rank(i) == bestrank) {
-				best.push_back(rank[i]);
+				best.push_back(get(i));
 			}
 		}
 	}
+	srand(unsigned(time(NULL)));
+	std::random_shuffle(best.begin(), best.end());
 	return best;
 }
 
 template<typename O, typename R>
 O ranking<O, R>::best_one() {
-	vector<O> best = best();
-	return best.size() > 0 ? best[0] : O();
+	vector<O> _best = best();
+	return _best.size() > 0 ? _best[0] : O();
 }
 
 template<typename O, typename R>
@@ -81,14 +82,6 @@ O ranking<O, R>::operator[](int i) {
 template<typename O, typename R>
 size_t ranking<O, R>::size() {
 	return map.size();
-}
-
-template<typename O, typename R>
-O ranking<O, R>::best_one() {
-	if (values.size() == 0)
-		std::transform(map.begin(), map.end(), std::back_inserter(values),
-				boost::bind(&std::map<R, O>::value_type::second, _1));
-	return (i < values.size() ? values[i] : O());
 }
 
 }
